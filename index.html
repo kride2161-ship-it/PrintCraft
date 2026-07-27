@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ПринтКрафт — Игрушки & Полезные вещи</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    /* Light Glassmorphism Theme (iOS 27) based on Logo Palette */
+    :root {
+      --brand-navy: #1B365D;
+      --brand-blue: #2563EB;
+      --brand-teal: #059669;
+      --brand-bg: #F4F7FB;
+    }
+
+    body {
+      background: linear-gradient(135deg, #EBF2FA 0%, #F4F7FB 40%, #E2ECF8 100%);
+      background-attachment: fixed;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #1B365D;
+      overflow-x: hidden;
+    }
+
+    /* Floating Ambient Glass Orbs */
+    .glass-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      z-index: -1;
+      opacity: 0.45;
+      animation: floatOrb 14s infinite alternate ease-in-out;
+    }
+    .orb-1 { width: 400px; height: 400px; background: #60A5FA; top: -80px; left: -80px; }
+    .orb-2 { width: 450px; height: 450px; background: #93C5FD; bottom: -100px; right: -80px; animation-delay: -5s; }
+    .orb-3 { width: 320px; height: 320px; background: #A7F3D0; top: 45%; left: 35%; animation-delay: -9s; }
+
+    @keyframes floatOrb {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(50px, 70px) scale(1.1); }
+    }
+
+    /* iOS 27 Light Ultra Glass Panels */
+    .ultra-glass {
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(30px) saturate(190%);
+      -webkit-backdrop-filter: blur(30px) saturate(190%);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 20px 50px rgba(27, 54, 93, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+      border-radius: 28px;
+    }
+
+    .ultra-glass-card {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(20px) saturate(170%);
+      -webkit-backdrop-filter: blur(20px) saturate(170%);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: 22px;
+      box-shadow: 0 10px 30px rgba(27, 54, 93, 0.05);
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .ultra-glass-card:hover {
+      transform: translateY(-5px) scale(1.015);
+      background: rgba(255, 255, 255, 0.92);
+      border-color: rgba(37, 99, 235, 0.3);
+      box-shadow: 0 20px 40px rgba(27, 54, 93, 0.12);
+    }
+
+    /* iOS Smooth Action Button */
+    .ios-btn {
+      background: linear-gradient(135deg, #1B365D 0%, #2563EB 100%);
+      color: #ffffff;
+      font-weight: 600;
+      border-radius: 9999px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 10px 25px rgba(37, 99, 235, 0.25);
+    }
+    .ios-btn:hover {
+      transform: scale(1.04);
+      box-shadow: 0 15px 35px rgba(37, 99, 235, 0.38);
+    }
+
+    /* Matrix Rain Overlay */
+    #matrixCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 9999;
+      display: none;
+      background: #000;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800 antialiased selection:bg-blue-500 selection:text-white" ondblclick="resolveHackState()">
+
+  <!-- Background Orbs -->
+  <div class="glass-orb orb-1"></div>
+  <div class="glass-orb orb-2"></div>
+  <div class="glass-orb orb-3"></div>
+
+  <!-- Matrix Screen Overlay -->
+  <canvas id="matrixCanvas"></canvas>
+  <div id="hackOverlay" class="fixed inset-0 z-[10000] hidden flex flex-col items-center justify-center p-6 text-center pointer-events-none">
+    <div class="ultra-glass p-8 max-w-xl border-red-500/50 bg-red-950/80 text-white">
+      <i data-lucide="shield-alert" class="w-16 h-16 text-red-400 mx-auto mb-4 animate-bounce"></i>
+      <h1 class="text-2xl md:text-3xl font-bold text-red-300 mb-2">Attention!</h1>
+      <p class="text-lg text-slate-200 mb-4">Someone tried to hack us, please wait until we fix it.</p>
+      <p class="text-xs text-slate-400 uppercase tracking-widest">( Нажмите 2 раза на экран для сброса )</p>
+    </div>
+  </div>
+
+  <!-- Header / Navigation Bar -->
+  <header class="fixed top-4 left-4 right-4 z-50 transition-all duration-300">
+    <div class="max-w-6xl mx-auto ultra-glass px-6 py-3 flex items-center justify-between">
+      
+      <!-- Brand Logo (Matching Shop Image) -->
+      <div class="flex items-center gap-3 cursor-pointer select-none" onclick="handleLogoClick()">
+        <div class="w-12 h-12 flex items-center justify-center">
+          <svg viewBox="0 0 100 100" class="w-full h-full">
+            <path d="M 25 35 L 75 35 L 75 80 L 25 80 Z" fill="none" stroke="#1B365D" stroke-width="4" stroke-linejoin="round"/>
+            <path d="M 35 20 L 65 20 L 65 35 L 35 35 Z" fill="none" stroke="#1B365D" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M 30 70 L 70 70 L 60 78 L 20 78 Z" fill="#E2ECF8" stroke="#1B365D" stroke-width="3"/>
+            <rect x="42" y="52" width="16" height="16" rx="2" fill="#059669" stroke="#1B365D" stroke-width="3"/>
+            <circle cx="47" cy="57" r="2" fill="#ffffff"/>
+            <circle cx="53" cy="57" r="2" fill="#ffffff"/>
+            <circle cx="82" cy="55" r="10" fill="none" stroke="#1B365D" stroke-width="4"/>
+            <circle cx="82" cy="55" r="5" fill="#059669"/>
+          </svg>
+        </div>
+        <div class="flex flex-col">
+          <span id="logoText" class="font-extrabold text-2xl tracking-tight text-[#1B365D] leading-none">
+            ПринтКрафт
+          </span>
+          <svg class="w-28 h-2 my-0.5" viewBox="0 0 100 10">
+            <path d="M 0 5 Q 50 10 100 2" fill="none" stroke="#1B365D" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          <span id="logoSubtitle" class="text-[11px] font-semibold text-[#1B365D]/80 tracking-wide">
+            Игрушки & Полезные вещи
+          </span>
+          <span id="serverStatusBadge" class="text-[10px] text-emerald-600 font-bold flex items-center gap-1 mt-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Сервер в сети
+          </span>
+        </div>
+      </div>
+
+      <!-- Hamburger Menu Button -->
+      <div class="flex items-center gap-4">
+        <button id="menuBtn" onclick="toggleMenu()" class="p-3 rounded-2xl ultra-glass-card text-[#1B365D] hover:bg-white transition">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Side Menu Drawer -->
+  <div id="sideMenu" class="fixed inset-y-0 right-0 w-80 z-50 ultra-glass p-6 translate-x-full transition-transform duration-500 ease-out flex flex-col justify-between">
+    <div>
+      <div class="flex items-center justify-between mb-8">
+        <h3 class="text-lg font-bold text-[#1B365D]" data-i18n="menu_title">Навигация</h3>
+        <button onclick="toggleMenu()" class="p-2 rounded-xl hover:bg-black/5">
+          <i data-lucide="x" class="w-5 h-5 text-[#1B365D]"></i>
+        </button>
+      </div>
+
+      <nav class="space-y-3 mb-8">
+        <a href="#home" onclick="toggleMenu()" class="block p-3 rounded-xl hover:bg-white/80 transition font-medium flex items-center gap-3 text-[#1B365D]" data-i18n="nav_home">
+          <i data-lucide="home" class="w-5 h-5 text-blue-600"></i> Главная
+        </a>
+        <a href="#prices" onclick="toggleMenu()" class="block p-3 rounded-xl hover:bg-white/80 transition font-medium flex items-center gap-3 text-[#1B365D]" data-i18n="nav_prices">
+          <i data-lucide="tag" class="w-5 h-5 text-indigo-600"></i> Цены
+        </a>
+        <a href="#stock" onclick="toggleMenu()" class="block p-3 rounded-xl hover:bg-white/80 transition font-medium flex items-center gap-3 text-[#1B365D]" data-i18n="nav_stock">
+          <i data-lucide="box" class="w-5 h-5 text-emerald-600"></i> В наличии
+        </a>
+        <a href="#reviews" onclick="toggleMenu()" class="block p-3 rounded-xl hover:bg-white/80 transition font-medium flex items-center gap-3 text-[#1B365D]" data-i18n="nav_reviews">
+          <i data-lucide="star" class="w-5 h-5 text-amber-500"></i> Отзывы
+        </a>
+        <a href="#order" onclick="toggleMenu()" class="block p-3 rounded-xl hover:bg-white/80 transition font-medium flex items-center gap-3 text-[#1B365D]" data-i18n="nav_order">
+          <i data-lucide="send" class="w-5 h-5 text-blue-500"></i> Заказать печать
+        </a>
+      </nav>
+
+      <div class="border-t border-slate-200/60 pt-6">
+        <label class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-2 block" data-i18n="select_lang">Язык / Language</label>
+        <select id="langSelect" onchange="changeLanguage(this.value)" class="w-full bg-white/90 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-[#1B365D]">
+          <option value="ru">Русский (RU)</option>
+          <option value="en">English (EN)</option>
+          <option value="kk">Қазақша (KK)</option>
+          <option value="zh" id="aprilFoolsOption" class="hidden">Chinese (ZH) - 1 April Special</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="text-xs text-slate-500 text-center border-t border-slate-200/60 pt-4">
+      © Все права защищены, ПринтКрафт 2026.
+    </div>
+  </div>
+
+  <!-- Main Scrollable Content -->
+  <main class="pt-36 pb-20 px-4 max-w-5xl mx-auto space-y-24">
+
+    <!-- HERO SECTION -->
+    <section id="home" class="min-h-[55vh] flex flex-col justify-center items-center text-center space-y-6">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full ultra-glass text-xs font-semibold text-blue-700 mb-2">
+        <i data-lucide="sparkles" class="w-4 h-4 text-blue-600"></i>
+        <span>iOS 27 Light Glass & Smart Server</span>
+      </div>
+      <h1 class="text-4xl md:text-6xl font-black tracking-tight leading-tight max-w-3xl text-[#1B365D]" data-i18n="hero_title">
+        3D Печать уникальных игрушек и полезных вещей
+      </h1>
+      <p class="text-slate-600 text-base md:text-lg max-w-xl font-medium" data-i18n="hero_desc">
+        Создаем качественные игрушки, развивающие кубики, модели и полезные детали с оперативной доставкой.
+      </p>
+      <div class="flex flex-wrap gap-4 justify-center pt-4">
+        <a href="#order" class="ios-btn px-8 py-4 text-base flex items-center gap-2" data-i18n="btn_custom_order">
+          <i data-lucide="send" class="w-5 h-5"></i> Сделать заказ
+        </a>
+        <a href="#stock" class="ultra-glass-card px-8 py-4 font-bold text-[#1B365D] hover:bg-white transition flex items-center gap-2" data-i18n="btn_view_stock">
+          В наличии
+        </a>
+      </div>
+    </section>
+
+    <!-- PRICES SECTION -->
+    <section id="prices" class="space-y-8">
+      <div class="text-center space-y-2">
+        <h2 class="text-3xl font-bold text-[#1B365D]" data-i18n="prices_title">Цены на печать</h2>
+        <p class="text-slate-500 text-sm font-medium" data-i18n="prices_subtitle">Стоимость зависит от габаритов и расхода материала</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="ultra-glass-card p-6 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center mb-4 text-blue-600">
+              <i data-lucide="toy-brick" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-xl font-bold text-[#1B365D]" data-i18n="price_small_title">Маленькие игрушки</h3>
+            <p class="text-slate-500 text-sm mt-1" data-i18n="price_small_desc">Брелоки, бенчики, фигурки до 5 см.</p>
+          </div>
+          <div class="text-3xl font-black text-blue-600">5 – 15 ₽</div>
+        </div>
+
+        <div class="ultra-glass-card p-6 flex flex-col justify-between space-y-4 border-blue-300">
+          <div>
+            <div class="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center mb-4 text-indigo-600">
+              <i data-lucide="box" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-xl font-bold text-[#1B365D]" data-i18n="price_med_title">Средние игрушки</h3>
+            <p class="text-slate-500 text-sm mt-1" data-i18n="price_med_desc">Кубики, подвижные модели до 12 см.</p>
+          </div>
+          <div class="text-3xl font-black text-indigo-600">15 – 35 ₽</div>
+        </div>
+
+        <div class="ultra-glass-card p-6 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="w-12 h-12 rounded-2xl bg-teal-100 flex items-center justify-center mb-4 text-teal-700">
+              <i data-lucide="layers" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-xl font-bold text-[#1B365D]" data-i18n="price_large_title">Большие игрушки</h3>
+            <p class="text-slate-500 text-sm mt-1" data-i18n="price_large_desc">Сложные сборные модели от 15 см.</p>
+          </div>
+          <div class="text-3xl font-black text-teal-700">35 – 50 ₽</div>
+        </div>
+      </div>
+
+      <div class="ultra-glass p-6 text-center bg-amber-500/10 border-amber-300/60">
+        <p class="text-amber-800 font-semibold" data-i18n="discount_text">
+          🔥 Скидочные цены: На данный момент специальных скидок нет, но следите за обновлениями!
+        </p>
+      </div>
+    </section>
+
+    <!-- IN STOCK SECTION -->
+    <section id="stock" class="space-y-8">
+      <div class="text-center space-y-2">
+        <h2 class="text-3xl font-bold text-[#1B365D]" data-i18n="stock_title">Готовая продукция в наличии</h2>
+        <p class="text-slate-500 text-sm font-medium" data-i18n="stock_subtitle">Ассортимент обновляется напрямую с сервера Arduino</p>
+      </div>
+
+      <div id="stockGrid" class="grid md:grid-cols-3 gap-6">
+        <!-- Dynamic Stock Render -->
+      </div>
+    </section>
+
+    <!-- CUSTOM ORDER FORM -->
+    <section id="order" class="space-y-6">
+      <div class="ultra-glass p-8 md:p-10 max-w-2xl mx-auto space-y-6">
+        <div class="text-center space-y-2">
+          <h2 class="text-3xl font-bold text-[#1B365D]" data-i18n="order_title">Заказ нестандартной печати</h2>
+          <p class="text-slate-500 text-sm font-medium" data-i18n="order_subtitle">Опишите, что именно вы хотите напечатать</p>
+        </div>
+
+        <form id="orderForm" onsubmit="sendOrderToArduino(event)" class="space-y-4">
+          <div>
+            <label class="block text-sm font-bold text-[#1B365D] mb-1" data-i18n="form_name">Ваше имя / Контакт</label>
+            <input type="text" id="clientName" required placeholder="Например: Алексей (@telegram)" class="w-full bg-white/90 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-[#1B365D]">
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-[#1B365D] mb-1" data-i18n="form_desc">Что нужно напечатать?</label>
+            <textarea id="orderDetails" required rows="3" placeholder="Опишите модель, цвет или размеры..." class="w-full bg-white/90 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-[#1B365D]"></textarea>
+          </div>
+          <button type="submit" class="w-full ios-btn py-4 text-center font-bold flex items-center justify-center gap-2">
+            <i data-lucide="send" class="w-5 h-5"></i> Отправить на сервер (Arduino)
+          </button>
+        </form>
+
+        <div id="clientStatusBox" class="hidden p-4 rounded-xl ultra-glass-card text-center text-sm font-bold"></div>
+      </div>
+    </section>
+
+    <!-- REVIEWS SECTION -->
+    <section id="reviews" class="space-y-8">
+      <div class="text-center space-y-2">
+        <h2 class="text-3xl font-bold text-[#1B365D]" data-i18n="reviews_title">Отзывы покупателей</h2>
+        <p class="text-slate-500 text-sm font-medium" data-i18n="reviews_subtitle">Настоящие отзывы клиентов</p>
+      </div>
+
+      <div id="reviewsGrid" class="grid md:grid-cols-2 gap-6">
+        <!-- Dynamic Reviews Render -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SECRET ADMIN PANEL (7 Clicks Trigger) -->
+  <div id="adminModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[9000] hidden flex items-center justify-center p-4">
+    <div class="ultra-glass p-6 md:p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto space-y-6">
+      
+      <div class="flex items-center justify-between border-b border-slate-200 pb-4">
+        <div class="flex items-center gap-2">
+          <i data-lucide="shield-check" class="w-6 h-6 text-emerald-600"></i>
+          <h2 class="text-xl font-bold text-[#1B365D]">Панель Управления (Arduino Server)</h2>
+        </div>
+        <button onclick="closeAdminPanel()" class="p-2 rounded-xl hover:bg-black/5 text-[#1B365D]">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="flex gap-2 border-b border-slate-200 pb-3">
+        <button onclick="switchAdminTab('orders')" id="tabBtnOrders" class="px-4 py-2 rounded-xl text-xs font-bold bg-[#1B365D] text-white">Входящие заказы</button>
+        <button onclick="switchAdminTab('stock')" id="tabBtnStock" class="px-4 py-2 rounded-xl text-xs font-bold bg-white text-[#1B365D] hover:bg-slate-100">Управление Товарами</button>
+        <button onclick="switchAdminTab('reviews')" id="tabBtnReviews" class="px-4 py-2 rounded-xl text-xs font-bold bg-white text-[#1B365D] hover:bg-slate-100">Управление Отзывами</button>
+      </div>
+
+      <!-- TAB 1: Incoming Orders -->
+      <div id="adminTabOrders" class="space-y-4">
+        <h3 class="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Текущий заказ:</h3>
+        <div id="adminOrderCard" class="ultra-glass-card p-4 space-y-3">
+          <div class="text-sm text-slate-500">Заказов пока нет или сервер оффлайн.</div>
+        </div>
+      </div>
+
+      <!-- TAB 2: Manage Assortment -->
+      <div id="adminTabStock" class="hidden space-y-6">
+        <div class="ultra-glass-card p-4 space-y-3 bg-white/80">
+          <h4 class="text-sm font-bold text-[#1B365D]">➕ Добавить новый товар в ассортимент</h4>
+          <div class="grid md:grid-cols-2 gap-3">
+            <input type="text" id="newItemName" placeholder="Название товара" class="bg-white border rounded-xl p-2 text-xs">
+            <select id="newItemSize" class="bg-white border rounded-xl p-2 text-xs">
+              <option value="Маленький">Маленький</option>
+              <option value="Средний">Средний</option>
+              <option value="Большой">Большой</option>
+            </select>
+            <input type="number" id="newItemPrice" placeholder="Цена (₽)" class="bg-white border rounded-xl p-2 text-xs">
+            <input type="text" id="newItemDesc" placeholder="Краткое описание" class="bg-white border rounded-xl p-2 text-xs">
+          </div>
+          <button onclick="addItemToStock()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs transition">
+            Добавить товар на плату
+          </button>
+        </div>
+
+        <div class="space-y-3">
+          <h4 class="text-xs font-extrabold text-slate-500 uppercase">Текущие товары на сервере:</h4>
+          <div id="adminStockList" class="space-y-2">
+            <!-- List with delete buttons -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: Manage Reviews -->
+      <div id="adminTabReviews" class="hidden space-y-6">
+        <div class="ultra-glass-card p-4 space-y-3 bg-white/80">
+          <h4 class="text-sm font-bold text-[#1B365D]">➕ Добавить отзыв</h4>
+          <div class="grid md:grid-cols-2 gap-3">
+            <input type="text" id="newRevName" placeholder="Имя клиента" class="bg-white border rounded-xl p-2 text-xs">
+            <select id="newRevRating" class="bg-white border rounded-xl p-2 text-xs">
+              <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+              <option value="4">⭐⭐⭐⭐ (4/5)</option>
+            </select>
+            <textarea id="newRevText" placeholder="Текст отзыва..." class="bg-white border rounded-xl p-2 text-xs md:col-span-2" rows="2"></textarea>
+          </div>
+          <button onclick="addReviewToServer()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl text-xs transition">
+            Сохранить отзыв на плату
+          </button>
+        </div>
+
+        <div class="space-y-3">
+          <h4 class="text-xs font-extrabold text-slate-500 uppercase">Все отзывы:</h4>
+          <div id="adminReviewsList" class="space-y-2">
+            <!-- List with delete buttons -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="border-t border-slate-200/80 py-8 text-center text-xs text-slate-500 font-medium">
+    <p>© Все права защищены, ПринтКрафт 2026.</p>
+  </footer>
+
+  <script>
+    const ARDUINO_IP = "http://192.168.1.100"; // IP адрес вашей Arduino Uno R4 WiFi
+    let logoClickCount = 0;
+    let logoClickTimer = null;
+    let isServerDown = false;
+
+    let stockItems = [
+      { id: 1, name: "1. Кораблик (Бенчик)", size: "Маленький", price: 15, desc: "Классический катер для проверки 3D печати." },
+      { id: 2, name: "2. Залипательный куб", size: "Средний", price: 30, desc: "Подвижный антистресс трансформер." },
+      { id: 3, name: "3. Снеговики", size: "Маленький", price: 10, desc: "Фигурки зимней тематики." }
+    ];
+
+    let reviewsList = [
+      { id: 1, name: "Александр", rating: 5, text: "Заказывал залипательный куб! Качество супер, детали идеально подходят." },
+      { id: 2, name: "Мария", rating: 5, text: "Очень быстро напечатали бенчик для сына. Спасибо ПринтКрафт!" }
+    ];
+
+    const translations = {
+      ru: {
+        menu_title: "Навигация",
+        nav_home: "Главная",
+        nav_prices: "Цены",
+        nav_stock: "В наличии",
+        nav_reviews: "Отзывы",
+        nav_order: "Заказать печать",
+        select_lang: "Язык / Language",
+        hero_title: "3D Печать уникальных игрушек и полезных вещей",
+        hero_desc: "Создаем качественные игрушки, развивающие кубики, модели и полезные детали с оперативной доставкой.",
+        btn_custom_order: "Сделать заказ",
+        btn_view_stock: "В наличии",
+        prices_title: "Цены на печать",
+        prices_subtitle: "Стоимость зависит от габаритов и расхода материала",
+        price_small_title: "Маленькие игрушки",
+        price_small_desc: "Брелоки, бенчики, фигурки до 5 см.",
+        price_med_title: "Средние игрушки",
+        price_med_desc: "Кубики, подвижные модели до 12 см.",
+        price_large_title: "Большие игрушки",
+        price_large_desc: "Сложные сборные модели от 15 см.",
+        discount_text: "🔥 Скидочные цены: На данный момент специальных скидок нет, но следите за обновлениями!",
+        stock_title: "Готовая продукция в наличии",
+        stock_subtitle: "Ассортимент обновляется напрямую с сервера Arduino",
+        order_title: "Заказ нестандартной печати",
+        order_subtitle: "Опишите, что именно вы хотите напечатать",
+        form_name: "Ваше имя / Контакт",
+        form_desc: "Что нужно напечатать?",
+        reviews_title: "Отзывы покупателей",
+        reviews_subtitle: "Настоящие отзывы клиентов"
+      },
+      en: {
+        menu_title: "Navigation",
+        nav_home: "Home",
+        nav_prices: "Prices",
+        nav_stock: "In Stock",
+        nav_reviews: "Reviews",
+        nav_order: "Order Print",
+        select_lang: "Language",
+        hero_title: "3D Printing of Unique Toys & Useful Things",
+        hero_desc: "We print high quality toys, articulation cubes, models and custom parts with fast delivery.",
+        btn_custom_order: "Place Order",
+        btn_view_stock: "In Stock",
+        prices_title: "Print Prices",
+        prices_subtitle: "Cost depends on dimensions and filament weight",
+        price_small_title: "Small Toys",
+        price_small_desc: "Keychains, benchies, models under 5cm.",
+        price_med_title: "Medium Toys",
+        price_med_desc: "Cubes, articulated models under 12cm.",
+        price_large_title: "Large Toys",
+        price_large_desc: "Complex assemblies over 15cm.",
+        discount_text: "🔥 Discount Prices: No active discounts currently, stay tuned!",
+        stock_title: "Ready Products In Stock",
+        stock_subtitle: "Assortment synced directly from Arduino Server",
+        order_title: "Custom Print Order",
+        order_subtitle: "Describe what you would like to print",
+        form_name: "Your Name / Contact",
+        form_desc: "What do you want to print?",
+        reviews_title: "Customer Reviews",
+        reviews_subtitle: "Verified client feedback"
+      },
+      kk: {
+        menu_title: "Навигация",
+        nav_home: "Басты бет",
+        nav_prices: "Бағалар",
+        nav_stock: "Қолда бар",
+        nav_reviews: "Пікірлер",
+        nav_order: "Тапсырыс беру",
+        select_lang: "Тіл / Language",
+        hero_title: "Ойыншықтар мен пайдалы заттарды 3D басып шығару",
+        hero_desc: "Сапалы ойыншықтар, текшелер мен пайдалы бөлшектерді жылдам басып шығарамыз.",
+        btn_custom_order: "Тапсырыс беру",
+        btn_view_stock: "Қолда бар",
+        prices_title: "Басу бағалары",
+        prices_subtitle: "Құны көлемі мен пластик шығынына байланысты",
+        price_small_title: "Шағын ойыншықтар",
+        price_small_desc: "Брелоктар, 5 см-ге дейінгі мүсіндер.",
+        price_med_title: "Орташа ойыншықтар",
+        price_med_desc: "Текшелер, 12 см-ге дейінгі модельдер.",
+        price_large_title: "Үлкен ойыншықтар",
+        price_large_desc: "15 см-ден жоғары күрделі модельдер.",
+        discount_text: "🔥 Жеңілдіктер: Қазірше арнайы жеңілдіктер жоқ.",
+        stock_title: "Дайын өнімдер",
+        stock_subtitle: "Ассортимент Arduino серверінен жаңартылады",
+        order_title: "Жеке тапсырыс",
+        order_subtitle: "Не басып шығарғыңыз келетінін сипаттаңыз",
+        form_name: "Атыңыз / Контакт",
+        form_desc: "Нені басып шығару керек?",
+        reviews_title: "Клиенттердің пікірлері",
+        reviews_subtitle: "Пікірлер"
+      },
+      zh: {
+        menu_title: "导航",
+        nav_home: "首页",
+        nav_prices: "价格",
+        nav_stock: "现货",
+        nav_reviews: "评价",
+        nav_order: "定制打印",
+        select_lang: "语言",
+        hero_title: "玩具与实用物品 3D 打印",
+        hero_desc: "高质量打印各类玩具、方块及配件，快速发货。",
+        btn_custom_order: "立即下单",
+        btn_view_stock: "查看现货",
+        prices_title: "打印价格",
+        prices_subtitle: "价格取决于尺寸和材料消耗",
+        price_small_title: "小型玩具",
+        price_small_desc: "钥匙扣、5厘米以下模型。",
+        price_med_title: "中型玩具",
+        price_med_desc: "魔方、12厘米以下模型。",
+        price_large_title: "大型玩具",
+        price_large_desc: "15厘米以上复杂组件。",
+        discount_text: "🔥 优惠价格：目前暂无特别优惠。",
+        stock_title: "现货商品",
+        stock_subtitle: "Arduino 服务器实时同步",
+        order_title: "定制打印订单",
+        order_subtitle: "描述您想打印的内容",
+        form_name: "您的姓名 / 联系方式",
+        form_desc: "您想打印什么？",
+        reviews_title: "客户评价",
+        reviews_subtitle: "客户真实反馈"
+      }
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons();
+      checkAprilFools();
+      renderStockUI();
+      renderReviewsUI();
+      checkServerHealth();
+      setInterval(checkServerHealth, 4000);
+    });
+
+    function checkAprilFools() {
+      const today = new Date();
+      if (today.getMonth() === 3 && today.getDate() === 1) { // 1 April
+        document.getElementById("aprilFoolsOption").classList.remove("hidden");
+        changeLanguage("zh");
+        document.getElementById("langSelect").value = "zh";
+      }
+    }
+
+    function changeLanguage(lang) {
+      const data = translations[lang] || translations.ru;
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (data[key]) el.textContent = data[key];
+      });
+    }
+
+    function toggleMenu() {
+      document.getElementById("sideMenu").classList.toggle("translate-x-full");
+    }
+
+    function handleLogoClick() {
+      logoClickCount++;
+      clearTimeout(logoClickTimer);
+      logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 2500);
+
+      if (logoClickCount >= 7) {
+        logoClickCount = 0;
+        openAdminPanel();
+      }
+    }
+
+    function openAdminPanel() {
+      document.getElementById("adminModal").classList.remove("hidden");
+      fetchAdminOrderData();
+      renderAdminStockList();
+      renderAdminReviewsList();
+    }
+
+    function closeAdminPanel() {
+      document.getElementById("adminModal").classList.add("hidden");
+    }
+
+    function switchAdminTab(tab) {
+      document.getElementById("adminTabOrders").classList.add("hidden");
+      document.getElementById("adminTabStock").classList.add("hidden");
+      document.getElementById("adminTabReviews").classList.add("hidden");
+
+      document.getElementById("tabBtnOrders").className = "px-4 py-2 rounded-xl text-xs font-bold bg-white text-[#1B365D]";
+      document.getElementById("tabBtnStock").className = "px-4 py-2 rounded-xl text-xs font-bold bg-white text-[#1B365D]";
+      document.getElementById("tabBtnReviews").className = "px-4 py-2 rounded-xl text-xs font-bold bg-white text-[#1B365D]";
+
+      if (tab === 'orders') {
+        document.getElementById("adminTabOrders").classList.remove("hidden");
+        document.getElementById("tabBtnOrders").className = "px-4 py-2 rounded-xl text-xs font-bold bg-[#1B365D] text-white";
+      } else if (tab === 'stock') {
+        document.getElementById("adminTabStock").classList.remove("hidden");
+        document.getElementById("tabBtnStock").className = "px-4 py-2 rounded-xl text-xs font-bold bg-[#1B365D] text-white";
+      } else if (tab === 'reviews') {
+        document.getElementById("adminTabReviews").classList.remove("hidden");
+        document.getElementById("tabBtnReviews").className = "px-4 py-2 rounded-xl text-xs font-bold bg-[#1B365D] text-white";
+      }
+    }
+
+    async function checkServerHealth() {
+      const logoText = document.getElementById("logoText");
+      const badge = document.getElementById("serverStatusBadge");
+
+      try {
+        const res = await fetch(`${ARDUINO_IP}/status`, { signal: AbortSignal.timeout(2000) });
+        const data = await res.json();
+
+        if (data.hacking) {
+          triggerHackScreen();
+          return;
+        }
+
+        isServerDown = false;
+        logoText.className = "font-extrabold text-2xl tracking-tight text-[#1B365D] leading-none";
+        logoText.textContent = "ПринтКрафт";
+        badge.className = "text-[10px] text-emerald-600 font-bold flex items-center gap-1 mt-1";
+        badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Сервер в сети`;
+
+        if (data.lastOrderStatus) {
+          showOrderStatusToClient(data);
+        }
+
+        fetchStockFromArduino();
+        fetchReviewsFromArduino();
+
+      } catch (err) {
+        isServerDown = true;
+        logoText.className = "font-black text-xl tracking-tight text-red-600 animate-pulse";
+        logoText.textContent = "The server is down, please try again later.";
+        badge.className = "text-[10px] text-red-500 font-bold flex items-center gap-1 mt-1";
+        badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-red-600"></span> Оффлайн`;
+      }
+    }
+
+    function renderStockUI() {
+      const grid = document.getElementById("stockGrid");
+      grid.innerHTML = stockItems.map(item => `
+        <div class="ultra-glass-card p-5 space-y-4">
+          <div class="h-40 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden relative border border-slate-200">
+            <i data-lucide="box" class="w-14 h-14 text-[#1B365D]/70"></i>
+            <span class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-extrabold bg-blue-100 text-blue-800 border border-blue-200">${item.size}</span>
+          </div>
+          <div>
+            <h3 class="font-bold text-lg text-[#1B365D]">${item.name}</h3>
+            <p class="text-slate-500 text-xs mt-1">${item.desc}</p>
+            <div class="text-xl font-black text-blue-600 mt-3">${item.price} ₽</div>
+          </div>
+        </div>
+      `).join("");
+      lucide.createIcons();
+    }
+
+    function renderReviewsUI() {
+      const grid = document.getElementById("reviewsGrid");
+      if (reviewsList.length === 0) {
+        grid.innerHTML = `<div class="col-span-2 ultra-glass p-6 text-center text-slate-500 italic">Отзывов пока нет.</div>`;
+        return;
+      }
+
+      grid.innerHTML = reviewsList.map(rev => `
+        <div class="ultra-glass-card p-5 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-[#1B365D]">${rev.name}</span>
+            <span class="text-amber-500 text-xs font-bold">${"★".repeat(rev.rating)}</span>
+          </div>
+          <p class="text-slate-600 text-sm italic">"${rev.text}"</p>
+        </div>
+      `).join("");
+    }
+
+    async function fetchStockFromArduino() {
+      try {
+        const res = await fetch(`${ARDUINO_IP}/api/items`);
+        const data = await res.json();
+        if (data.items && Array.isArray(data.items)) {
+          stockItems = data.items;
+          renderStockUI();
+        }
+      } catch (e) {}
+    }
+
+    async function fetchReviewsFromArduino() {
+      try {
+        const res = await fetch(`${ARDUINO_IP}/api/reviews`);
+        const data = await res.json();
+        if (data.reviews && Array.isArray(data.reviews)) {
+          reviewsList = data.reviews;
+          renderReviewsUI();
+        }
+      } catch (e) {}
+    }
+
+    async function addItemToStock() {
+      const name = document.getElementById("newItemName").value;
+      const size = document.getElementById("newItemSize").value;
+      const price = parseInt(document.getElementById("newItemPrice").value) || 0;
+      const desc = document.getElementById("newItemDesc").value;
+
+      if (!name || !price) return alert("Заполните название и цену!");
+
+      const newItem = { id: Date.now(), name, size, price, desc };
+      stockItems.push(newItem);
+      renderStockUI();
+      renderAdminStockList();
+
+      fetch(`${ARDUINO_IP}/api/add_item`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newItem)
+      }).catch(() => {});
+
+      document.getElementById("newItemName").value = "";
+      document.getElementById("newItemPrice").value = "";
+      document.getElementById("newItemDesc").value = "";
+    }
+
+    function renderAdminStockList() {
+      const list = document.getElementById("adminStockList");
+      list.innerHTML = stockItems.map(item => `
+        <div class="flex items-center justify-between p-2 bg-white/60 rounded-xl border border-slate-200 text-xs">
+          <div>
+            <strong>${item.name}</strong> (${item.size}) — ${item.price} ₽
+          </div>
+          <button onclick="deleteStockItem(${item.id})" class="px-3 py-1 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 transition">
+            Удалить
+          </button>
+        </div>
+      `).join("");
+    }
+
+    async function deleteStockItem(id) {
+      stockItems = stockItems.filter(i => i.id !== id);
+      renderStockUI();
+      renderAdminStockList();
+
+      fetch(`${ARDUINO_IP}/api/delete_item`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      }).catch(() => {});
+    }
+
+    async function addReviewToServer() {
+      const name = document.getElementById("newRevName").value;
+      const rating = parseInt(document.getElementById("newRevRating").value) || 5;
+      const text = document.getElementById("newRevText").value;
+
+      if (!name || !text) return alert("Заполните имя и текст!");
+
+      const newRev = { id: Date.now(), name, rating, text };
+      reviewsList.push(newRev);
+      renderReviewsUI();
+      renderAdminReviewsList();
+
+      fetch(`${ARDUINO_IP}/api/add_review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newRev)
+      }).catch(() => {});
+
+      document.getElementById("newRevName").value = "";
+      document.getElementById("newRevText").value = "";
+    }
+
+    function renderAdminReviewsList() {
+      const list = document.getElementById("adminReviewsList");
+      list.innerHTML = reviewsList.map(rev => `
+        <div class="flex items-center justify-between p-2 bg-white/60 rounded-xl border border-slate-200 text-xs">
+          <div>
+            <strong>${rev.name}</strong> (${rev.rating}★): "${rev.text}"
+          </div>
+          <button onclick="deleteReviewItem(${rev.id})" class="px-3 py-1 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 transition">
+            Удалить
+          </button>
+        </div>
+      `).join("");
+    }
+
+    async function deleteReviewItem(id) {
+      reviewsList = reviewsList.filter(r => r.id !== id);
+      renderReviewsUI();
+      renderAdminReviewsList();
+
+      fetch(`${ARDUINO_IP}/api/delete_review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      }).catch(() => {});
+    }
+
+    async function sendOrderToArduino(e) {
+      e.preventDefault();
+      const client = document.getElementById("clientName").value;
+      const details = document.getElementById("orderDetails").value;
+      const statusBox = document.getElementById("clientStatusBox");
+
+      statusBox.classList.remove("hidden", "bg-red-100", "text-red-700", "bg-emerald-100", "text-emerald-800");
+      statusBox.classList.add("bg-blue-100", "text-blue-800");
+      statusBox.textContent = "Отправка заказа на сервер Arduino...";
+
+      try {
+        const res = await fetch(`${ARDUINO_IP}/api/order`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: client, desc: details })
+        });
+        if (res.ok) {
+          statusBox.textContent = "Заказ отправлен на плату! Ожидайте расчёта...";
+        } else {
+          throw new Error();
+        }
+      } catch (err) {
+        statusBox.classList.add("bg-red-100", "text-red-700");
+        statusBox.textContent = "Ошибка связи с сервером Arduino.";
+      }
+    }
+
+    function showOrderStatusToClient(data) {
+      const box = document.getElementById("clientStatusBox");
+      if (!box) return;
+      box.classList.remove("hidden");
+
+      if (data.lastOrderStatus === "rejected") {
+        box.className = "p-4 rounded-xl ultra-glass-card text-center text-sm font-bold bg-red-100 text-red-700 border border-red-300";
+        box.textContent = "Автор отказал вам в этой печати";
+      } else if (data.lastOrderStatus === "accepted") {
+        box.className = "p-4 rounded-xl ultra-glass-card text-center text-sm font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
+        box.textContent = `Автор принял, с вас: ${data.calculatedPrice} ₽ (Пластик: ${data.grams}g)`;
+      }
+    }
+
+    async function fetchAdminOrderData() {
+      const card = document.getElementById("adminOrderCard");
+      try {
+        const res = await fetch(`${ARDUINO_IP}/api/get_latest_order`);
+        const data = await res.json();
+
+        if (!data.order) {
+          card.innerHTML = `<div class="text-sm text-slate-500">Нет новых активных заказов.</div>`;
+          return;
+        }
+
+        card.innerHTML = `
+          <div><strong class="text-blue-700">Заказчик:</strong> ${data.order.name}</div>
+          <div><strong class="text-indigo-700">Детали:</strong> ${data.order.desc}</div>
+          <div class="pt-2 border-t border-slate-200 space-y-3">
+            <label class="block text-xs font-bold text-slate-700">Расход пластика (в граммах, например 30g = 140р):</label>
+            <input type="number" id="gramsInput" placeholder="Вес в граммах (например, 30)" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm">
+            
+            <div class="flex gap-2 pt-1">
+              <button onclick="adminDecision('accept')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs transition">
+                Принять
+              </button>
+              <button onclick="adminDecision('reject')" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-xl text-xs transition">
+                Отклонить
+              </button>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        card.innerHTML = `<div class="text-sm text-red-500">Не удалось загрузить данные заказа с платы.</div>`;
+      }
+    }
+
+    async function adminDecision(type) {
+      const grams = document.getElementById("gramsInput") ? document.getElementById("gramsInput").value : 0;
+      await fetch(`${ARDUINO_IP}/api/admin_action`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: type, grams: parseFloat(grams) || 0 })
+      }).catch(() => {});
+
+      closeAdminPanel();
+      checkServerHealth();
+    }
+
+    let matrixInterval = null;
+    function triggerHackScreen() {
+      const canvas = document.getElementById("matrixCanvas");
+      const overlay = document.getElementById("hackOverlay");
+      canvas.style.display = "block";
+      overlay.classList.remove("hidden");
+
+      if (matrixInterval) return;
+
+      const ctx = canvas.getContext("2d");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const letters = "0123456789PRINTCRAFT";
+      const fontSize = 16;
+      const columns = canvas.width / fontSize;
+      const drops = Array.from({ length: columns }).fill(1);
+
+      matrixInterval = setInterval(() => {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#0F0";
+        ctx.font = fontSize + "px monospace";
+
+        for (let i = 0; i < drops.length; i++) {
+          const text = letters.charAt(Math.floor(Math.random() * letters.length));
+          ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+          if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+            drops[i] = 0;
+          }
+          drops[i]++;
+        }
+      }, 33);
+    }
+
+    function resolveHackState() {
+      document.getElementById("matrixCanvas").style.display = "none";
+      document.getElementById("hackOverlay").classList.add("hidden");
+      if (matrixInterval) {
+        clearInterval(matrixInterval);
+        matrixInterval = null;
+      }
+      fetch(`${ARDUINO_IP}/api/reset_hack`, { method: "POST" }).catch(() => {});
+    }
+  </script>
+</body>
+</html>
