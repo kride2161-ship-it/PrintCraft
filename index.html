@@ -3,323 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ПринтКрафт × Артс&Крафтинг</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <title>Verification Portal // 3D Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-dark: #080b11;
-            --card-bg: rgba(22, 28, 45, 0.6);
-            --card-border: rgba(255, 255, 255, 0.08);
-            --card-hover-border: rgba(56, 189, 248, 0.4);
-            --accent-cyan: #38bdf8;
-            --accent-purple: #818cf8;
-            --accent-pink: #f43f5e;
-            --text-main: #f8fafc;
-            --text-sub: #94a3b8;
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .glass {
+            background: rgba(13, 17, 23, 0.75);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+        .glow-box {
+            box-shadow: 0 0 50px -10px rgba(99, 102, 241, 0.15);
         }
-
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 40px 20px;
-            position: relative;
-            overflow-x: hidden;
+        .glow-input:focus-within {
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.25);
+            border-color: rgba(99, 102, 241, 0.6);
         }
-
-        /* Анимированный фоновый градиент */
-        .bg-glow-1, .bg-glow-2 {
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            border-radius: 50%;
-            filter: blur(120px);
-            z-index: 0;
-            opacity: 0.25;
-            animation: floatGlow 10s infinite alternate ease-in-out;
-        }
-
-        .bg-glow-1 {
-            background: var(--accent-cyan);
-            top: -100px;
-            left: -100px;
-        }
-
-        .bg-glow-2 {
-            background: var(--accent-purple);
-            bottom: -100px;
-            right: -100px;
-            animation-delay: -5s;
-        }
-
-        @keyframes floatGlow {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(60px, 40px) scale(1.2); }
-        }
-
-        .container {
-            max-width: 900px;
-            width: 100%;
-            z-index: 1;
-        }
-
-        /* Шапка */
-        header {
-            text-align: center;
-            margin-bottom: 50px;
-            position: relative;
-        }
-
-        header h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #38bdf8 0%, #c084fc 50%, #f43f5e 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 10px 30px rgba(56, 189, 248, 0.2);
-            animation: fadeInDown 0.8s ease;
-        }
-
-        .subtitle {
-            margin-top: 10px;
-            color: var(--text-sub);
-            font-size: 1rem;
-            animation: fadeInUp 0.8s ease 0.2s backwards;
-        }
-
-        /* Сетка товаров */
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 24px;
-            margin-bottom: 50px;
-        }
-
-        /* Карточка товара с эффектом стекла */
-        .product-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            animation: fadeInUp 0.8s ease backwards;
-        }
-
-        .product-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-            transition: 0.5s;
-        }
-
-        .product-card:hover::before {
-            left: 100%;
-        }
-
-        .product-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            border-color: var(--card-hover-border);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(56, 189, 248, 0.15);
-        }
-
-        .product-icon {
-            width: 48px;
-            height: 48px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .product-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            line-height: 1.3;
-        }
-
-        .product-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: auto;
-        }
-
-        .product-price {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: var(--text-main);
-        }
-
-        /* Пульсирующий бейдж скидки */
-        .badge-discount {
-            background: linear-gradient(135deg, #f43f5e, #fb7185);
-            color: white;
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 6px 12px;
-            border-radius: 20px;
-            box-shadow: 0 0 12px rgba(244, 63, 94, 0.4);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); box-shadow: 0 0 18px rgba(244, 63, 94, 0.6); }
-            100% { transform: scale(1); }
-        }
-
-        /* Контакты */
-        .contacts-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--card-border);
-            border-radius: 24px;
-            padding: 32px;
-            text-align: center;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            animation: fadeInUp 0.8s ease 0.4s backwards;
-        }
-
-        .contacts-card h2 {
-            font-size: 1.5rem;
-            margin-bottom: 12px;
-            font-weight: 700;
-        }
-
-        .contacts-card p {
-            color: var(--text-sub);
-            margin-bottom: 20px;
-            font-size: 0.95rem;
-        }
-
-        .email-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
-            color: #fff;
-            font-weight: 700;
-            text-decoration: none;
-            padding: 14px 28px;
-            border-radius: 14px;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 20px rgba(56, 189, 248, 0.25);
-        }
-
-        .email-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 25px rgba(56, 189, 248, 0.4);
-            filter: brightness(1.1);
-        }
-
-        /* Появление блоков */
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .animate-fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
     </style>
 </head>
-<body>
+<body class="bg-[#07090e] text-slate-100 min-h-screen flex flex-col items-center justify-center p-4 selection:bg-indigo-500 selection:text-white relative overflow-x-hidden">
 
-    <div class="bg-glow-1"></div>
-    <div class="bg-glow-2"></div>
+    <!-- Ambient background glows -->
+    <div class="absolute top-1/5 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute bottom-1/4 left-1/4 w-[350px] h-[350px] bg-blue-600/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-    <div class="container">
-        <header>
-            <h1>ПринтКрафт × Артс&Крафтинг</h1>
-            <p class="subtitle">Уникальные 3D-модели и оригинальные игрушки</p>
-        </header>
-
-        <main>
-            <div class="products-grid">
-                
-                <div class="product-card" style="animation-delay: 0.1s;">
-                    <div class="product-icon">🛠️</div>
-                    <div class="product-title">Лопатка</div>
-                    <div class="product-footer">
-                        <div class="product-price">48 ₽</div>
-                    </div>
-                </div>
-
-                <div class="product-card" style="animation-delay: 0.2s;">
-                    <div class="product-icon">🌀</div>
-                    <div class="product-title">Спиральный конус</div>
-                    <div class="product-footer">
-                        <div class="product-price">60 ₽</div>
-                    </div>
-                </div>
-
-                <div class="product-card" style="animation-delay: 0.3s;">
-                    <div class="product-icon">🎲</div>
-                    <div class="product-title">Бесконечный кубик-антистресс</div>
-                    <div class="product-footer">
-                        <div class="product-price">34 ₽</div>
-                    </div>
-                </div>
-
-                <div class="product-card" style="animation-delay: 0.4s;">
-                    <div class="product-icon">⭐</div>
-                    <div class="product-title">10-конечная звёздная игрушка</div>
-                    <div class="product-footer">
-                        <div class="product-price">87 ₽</div>
-                        <span class="badge-discount">Скидка!</span>
-                    </div>
-                </div>
-
-                <div class="product-card" style="animation-delay: 0.5s;">
-                    <div class="product-icon">🪭</div>
-                    <div class="product-title">Складной веер</div>
-                    <div class="product-footer">
-                        <div class="product-price">99 ₽</div>
-                        <span class="badge-discount">Скидка!</span>
-                    </div>
-                </div>
-
+    <div class="w-full max-w-xl z-10 space-y-8">
+        
+        <!-- Header -->
+        <div class="text-center space-y-3">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-xs font-medium text-indigo-400 shadow-inner">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Secured Authentication Node
             </div>
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-br from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+                Проверка подлинности товара
+            </h1>
+            <p class="text-slate-400 text-sm max-w-md mx-auto">Введите номер гарантийного талона для доступа к техническим спецификациям</p>
+        </div>
 
-            <section class="contacts-card">
-                <h2>Оформить заказ или написать отзыв</h2>
-                <p>Напишите нам, чтобы заказать игрушку по индивидуальному проекту или оставить отзыв!</p>
-                <a href="mailto:kride2161@gmail.com" class="email-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                    kride2161@gmail.com
-                </a>
-            </section>
-        </main>
+        <!-- Search Card -->
+        <div class="glass rounded-3xl p-6 sm:p-8 glow-box relative">
+            <form id="searchForm" class="space-y-4">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Номер изделия</label>
+                
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-1 flex items-center bg-slate-950/80 border border-slate-800/80 rounded-2xl overflow-hidden glow-input transition-all">
+                        <span class="pl-4 pr-1 font-mono text-sm text-slate-500 select-none tracking-wider">PC000000000</span>
+                        <input 
+                            type="text" 
+                            id="suffixInput" 
+                            placeholder="01" 
+                            maxlength="3"
+                            autocomplete="off"
+                            class="w-full bg-transparent py-4 pr-4 text-slate-100 placeholder-slate-700 font-mono text-base tracking-wider outline-none"
+                        >
+                    </div>
+                    <button 
+                        type="submit" 
+                        class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-200 shadow-lg shadow-indigo-600/30 cursor-pointer text-sm flex items-center justify-center gap-2 shrink-0"
+                    >
+                        <span>Проверить</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Result Container -->
+        <div id="resultContainer" class="hidden animate-fade-in">
+            <div class="glass rounded-3xl p-6 sm:p-8 space-y-6 relative overflow-hidden shadow-2xl border-slate-800/80">
+                
+                <!-- Status Badge Header -->
+                <div class="flex items-center justify-between pb-4 border-b border-slate-800/80">
+                    <span id="resCode" class="font-mono text-xs text-indigo-400 tracking-wider bg-indigo-500/10 px-3.5 py-1.5 rounded-xl border border-indigo-500/20"></span>
+                    <div id="warrantyBadge"></div>
+                </div>
+
+                <!-- Details Grid -->
+                <div class="space-y-3.5 text-sm">
+                    <div class="flex justify-between items-center py-2.5 border-b border-slate-800/40">
+                        <span class="text-slate-400">Получатель / Покупатель</span>
+                        <span id="resClient" class="font-medium text-slate-200 text-right"></span>
+                    </div>
+                    <div class="flex justify-between items-center py-2.5 border-b border-slate-800/40">
+                        <span class="text-slate-400">Мастер</span>
+                        <span id="resMaster" class="font-medium text-slate-200 text-right"></span>
+                    </div>
+                    <div class="flex justify-between items-center py-2.5 border-b border-slate-800/40">
+                        <span class="text-slate-400">Наименование товара</span>
+                        <span id="resProduct" class="font-medium text-slate-200 text-right"></span>
+                    </div>
+                    <div class="flex justify-between items-center py-2.5 border-b border-slate-800/40">
+                        <span class="text-slate-400">Используемый пластик</span>
+                        <span id="resPlastic" class="font-medium text-slate-200 text-right"></span>
+                    </div>
+                    <div class="flex justify-between items-center py-2.5 border-b border-slate-800/40">
+                        <span class="text-slate-400">Срок гарантии</span>
+                        <span id="resWarranty" class="font-mono font-medium text-right"></span>
+                    </div>
+                    <div class="flex justify-between items-center py-2.5 border-b border-slate-800/40">
+                        <span class="text-slate-400">3D-печать</span>
+                        <span id="resPrint" class="font-medium text-slate-200 text-right"></span>
+                    </div>
+                    <div id="discountRow" class="flex justify-between items-center py-2.5 border-b border-slate-800/40 hidden">
+                        <span class="text-slate-400">Персональная скидка</span>
+                        <span id="resDiscount" class="font-medium text-emerald-400 text-right"></span>
+                    </div>
+                </div>
+
+                <!-- Total Payment Block -->
+                <div class="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between bg-slate-900/60 px-5 py-4 rounded-2xl border border-slate-800/60">
+                    <span class="text-slate-300 font-semibold text-sm">ОБЩИЙ ИТОГ К ОПЛАТЕ:</span>
+                    <span id="resTotal" class="text-xl font-bold text-white font-mono"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Container -->
+        <div id="errorContainer" class="hidden animate-fade-in">
+            <div class="glass rounded-3xl p-6 text-center border-red-500/20 bg-red-950/10 shadow-xl">
+                <p class="text-red-400 text-sm font-medium leading-relaxed">
+                    Ваш код подленный, или неверный. Проверьте что написано на бумаге и введите снова
+                </p>
+            </div>
+        </div>
+
     </div>
 
+    <script>
+        // База данных мини-сервера
+        const db = {
+            "PC0000000001": {
+                client: "Илья Бондаренко",
+                master: "Глеб Бондаренко",
+                product: 'Бесконечный куб игрушка "Анти-Стресс"',
+                plastic: "PLA Lite Bambu Lab",
+                warrantyDays: 1,
+                warrantyDateStr: "26.07.2026",
+                warrantyDateObj: new Date(2026, 6, 26), // Месяцы 0-индексируемые (6 = июль)
+                printDetails: 'Бесконечный куб игрушка "Анти-Стресс" (Чёрный цвет) | 47 ₽',
+                discount: "-27 ₽",
+                total: "20 ₽"
+            },
+            "PC0000000002": {
+                client: "Мария Ермакова",
+                master: "Глеб Бондаренко",
+                product: 'Конусообразная игрушка "Анти-Стресс"',
+                plastic: "PLA Lite Bambu Lab",
+                warrantyDays: 90,
+                warrantyDateStr: "28.11.2026",
+                warrantyDateObj: new Date(2026, 10, 28), // 10 = ноябрь
+                printDetails: 'Конусообразная игрушка "Анти-Стресс" (Чёрный цвет)',
+                discount: "-27 ₽",
+                total: "20 ₽"
+            },
+            "PC0000000003": {
+                client: "Георгий Бондаренко",
+                master: "Глеб Бондаренко",
+                product: "Глушитель сигнализации ремня",
+                plastic: "PLA Lite Bambu Lab (чёрный)",
+                warrantyDays: 90,
+                warrantyDateStr: "29.11.2026",
+                warrantyDateObj: new Date(2026, 10, 29), // 10 = ноябрь
+                printDetails: "Глушитель сигнализации ремня (Чёрный цвет, без AMS) | 35 руб",
+                discount: null,
+                total: "35 руб"
+            }
+        };
+
+        const form = document.getElementById('searchForm');
+        const suffixInput = document.getElementById('suffixInput');
+        const resultContainer = document.getElementById('resultContainer');
+        const errorContainer = document.getElementById('errorContainer');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const suffix = suffixInput.value.trim();
+            const code = "PC000000000" + suffix;
+
+            resultContainer.classList.add('hidden');
+            errorContainer.classList.add('hidden');
+
+            if (!suffix) return;
+
+            const item = db[code];
+
+            if (item) {
+                // Заполняем данные
+                document.getElementById('resCode').textContent = code;
+                document.getElementById('resClient').textContent = item.client;
+                document.getElementById('resMaster').textContent = item.master;
+                document.getElementById('resProduct').textContent = item.product;
+                document.getElementById('resPlastic').textContent = item.plastic;
+                document.getElementById('resPrint').textContent = item.printDetails;
+                document.getElementById('resTotal').textContent = item.total;
+
+                // Скидка (если есть)
+                const discountRow = document.getElementById('discountRow');
+                if (item.discount) {
+                    document.getElementById('resDiscount').textContent = item.discount;
+                    discountRow.classList.remove('hidden');
+                } else {
+                    discountRow.classList.add('hidden');
+                }
+
+                // Динамическая проверка времени (автоматическое определение по текущему времени браузера)
+                const now = new Date();
+                const isExpired = now > item.warrantyDateObj;
+
+                const warrantyBadge = document.getElementById('warrantyBadge');
+                const resWarranty = document.getElementById('resWarranty');
+
+                if (isExpired) {
+                    warrantyBadge.innerHTML = `<span class="px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold tracking-wide">ПРОСРОЧЕНО</span>`;
+                    resWarranty.innerHTML = `${item.warrantyDays} ${item.warrantyDays === 1 ? 'день' : 'дней'} <span class="text-red-400 font-semibold">[ ПРОСРОЧЕНО ]</span> | ${item.warrantyDateStr}`;
+                } else {
+                    warrantyBadge.innerHTML = `<span class="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wide">НЕ ПРОСРОЧЕНО</span>`;
+                    resWarranty.innerHTML = `${item.warrantyDays} дней <span class="text-emerald-400 font-semibold">[ НЕ ПРОСРОЧЕНО ]</span> ${item.warrantyDateStr}`;
+                }
+
+                resultContainer.classList.remove('hidden');
+            } else {
+                errorContainer.classList.remove('hidden');
+            }
+        });
+    </script>
 </body>
 </html>
